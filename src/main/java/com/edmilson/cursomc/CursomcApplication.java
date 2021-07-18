@@ -1,5 +1,6 @@
 package com.edmilson.cursomc;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,20 @@ import com.edmilson.cursomc.domain.Cidade;
 import com.edmilson.cursomc.domain.Cliente;
 import com.edmilson.cursomc.domain.Endereco;
 import com.edmilson.cursomc.domain.Estado;
+import com.edmilson.cursomc.domain.Pagamento;
+import com.edmilson.cursomc.domain.PagamentoComBoleto;
+import com.edmilson.cursomc.domain.PagamentoComCartao;
+import com.edmilson.cursomc.domain.Pedido;
 import com.edmilson.cursomc.domain.Produto;
+import com.edmilson.cursomc.domain.enums.EstadoPagamento;
 import com.edmilson.cursomc.domain.enums.TipoCliente;
 import com.edmilson.cursomc.repositories.CategoriaRepositry;
 import com.edmilson.cursomc.repositories.CidadeRepository;
 import com.edmilson.cursomc.repositories.ClienteRepository;
 import com.edmilson.cursomc.repositories.EnderecoRepository;
 import com.edmilson.cursomc.repositories.EstadoRepository;
+import com.edmilson.cursomc.repositories.PagamentoRepository;
+import com.edmilson.cursomc.repositories.PedidoRepository;
 import com.edmilson.cursomc.repositories.ProdutoRepository;
 
 @SpringBootApplication
@@ -41,6 +49,13 @@ public class CursomcApplication implements CommandLineRunner{
 	
 	@Autowired
 	private EnderecoRepository enderecoRepository;
+	
+	@Autowired
+	private PagamentoRepository pagamentoRepository;
+	
+	@Autowired
+	private PedidoRepository pedidoRepository;
+	
 	
 	public static void main(String[] args) {
 		SpringApplication.run(CursomcApplication.class, args);
@@ -77,11 +92,26 @@ public class CursomcApplication implements CommandLineRunner{
 		
 		p1.getCategorias().addAll(Arrays.asList(cat1));
 		p2.getCategorias().addAll(Arrays.asList(cat1, cat2));
-		p3.getCategorias().addAll(Arrays.asList(cat1));
+		p3.getCategorias().addAll(Arrays.asList(cat1));	
 		
 		est1.getCidades().addAll(Arrays.asList(c1));
 		est2.getCidades().addAll(Arrays.asList(c2,c3));
 		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+		
+		Pedido ped1 = new Pedido(null,sdf.parse("20/10/2017 10:32"),cli1, e1);
+		
+		Pedido ped2 = new Pedido(null,sdf.parse("20/10/2021 20:11"),cli1, e2);
+		
+		Pagamento pagto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO,ped1,6);
+		Pagamento pagto2 = new PagamentoComBoleto
+				(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("15/12/2019 16:35"),null);
+		
+		ped1.setPagamento(pagto1);
+		ped2.setPagamento(pagto2);
+		
+		cli1.getPedidos().addAll(Arrays.asList(ped1,ped2));
+	
 		
 		
 		categoriaRepository.saveAll(Arrays.asList(cat1,cat2));
@@ -95,6 +125,10 @@ public class CursomcApplication implements CommandLineRunner{
 		clienteRepository.saveAll(Arrays.asList(cli1));
 		
 		enderecoRepository.saveAll(Arrays.asList(e1,e2));
+	
+		pedidoRepository.saveAll(Arrays.asList(ped1,ped2));
+	    
+		pagamentoRepository.saveAll(Arrays.asList(pagto1,pagto2));
 	}
 
 }
